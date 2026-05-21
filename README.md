@@ -1,4 +1,5 @@
-Copyright (c) 2026 kanataproject
+Copyright (c) 2026 kanataproject. All rights reserved.
+
 本リポジトリのコードおよび理論の無断使用、改変、再配布、および本コードをベースにした特許出願や論文発表を固く禁じます。共同研究や知財化に関するお問い合わせは作者までご連絡ください。
 
 # quantum-plateau-bypass
