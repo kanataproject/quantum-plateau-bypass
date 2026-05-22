@@ -1,0 +1,18 @@
+======================================================
+  粒度 (Step Size): 1e-05
+  目標 Epoch     : 150
+  開始時刻       : 2026-05-22 19:56:51
+======================================================
+
+Epoch  15 | Cost: 0.063439 | Q-Grad Norm: 0.03287558
+Epoch  30 | Cost: 0.032464 | Q-Grad Norm: 0.01965353
+Epoch  45 | Cost: 0.020265 | Q-Grad Norm: 0.01206251
+Epoch  60 | Cost: 0.012838 | Q-Grad Norm: 0.00556817
+Epoch  75 | Cost: 0.008072 | Q-Grad Norm: 0.00247853
+Epoch  90 | Cost: 0.005363 | Q-Grad Norm: 0.00145501
+Epoch 105 | Cost: 0.003541 | Q-Grad Norm: 0.00102974
+Epoch 120 | Cost: 0.002458 | Q-Grad Norm: 0.00071866
+Epoch 135 | Cost: 0.001787 | Q-Grad Norm: 0.00070046
+Epoch 150 | Cost: 0.001288 | Q-Grad Norm: 0.00059963
+
+=> 🏁 [GOAL] 150 Epoch 完走。

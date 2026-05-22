@@ -1,0 +1,24 @@
+======================================================
+ 量子AI GUIグラフィック版
+ 固定粒度 (Step Size) : 1e-15
+ 目標エポック (Epochs): 300
+======================================================
+
+Epoch  15 / 300 | Cost: 0.063438 | Q-Grad Norm: 0.03287553
+Epoch  30 / 300 | Cost: 0.032463 | Q-Grad Norm: 0.01965377
+Epoch  45 / 300 | Cost: 0.020265 | Q-Grad Norm: 0.01206273
+Epoch  60 / 300 | Cost: 0.012838 | Q-Grad Norm: 0.00556832
+Epoch  75 / 300 | Cost: 0.008072 | Q-Grad Norm: 0.00247877
+Epoch  90 / 300 | Cost: 0.005363 | Q-Grad Norm: 0.00145493
+Epoch 105 / 300 | Cost: 0.003541 | Q-Grad Norm: 0.00103002
+Epoch 120 / 300 | Cost: 0.002458 | Q-Grad Norm: 0.00071845
+Epoch 135 / 300 | Cost: 0.001787 | Q-Grad Norm: 0.00070026
+Epoch 150 / 300 | Cost: 0.001289 | Q-Grad Norm: 0.00059958
+Epoch 165 / 300 | Cost: 0.000964 | Q-Grad Norm: 0.00025835
+Epoch 180 / 300 | Cost: 0.000753 | Q-Grad Norm: 0.00025949
+Epoch 195 / 300 | Cost: 0.000572 | Q-Grad Norm: 0.00029509
+Epoch 210 / 300 | Cost: 0.000425 | Q-Grad Norm: 0.00022747
+Epoch 225 / 300 | Cost: 0.000322 | Q-Grad Norm: 0.00019306
+Epoch 240 / 300 | Cost: 0.000250 | Q-Grad Norm: 0.00018968
+
+=> ⚠️ [KILL] 成長の停滞(LOOP)を検知。終了時の最終正解率: 89.47 %

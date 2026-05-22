@@ -1,0 +1,18 @@
+======================================================
+ 量子AI 最終生産仕様 - 15Epoch毎テスト・ベストハント仕様
+ 固定粒度 (Step Size) : 1e-15
+ 目標エポック (Epochs): 135
+======================================================
+
+Epoch  15 / 135 | Cost: 0.063438 | Q-Grad Norm: 0.03287553 | Test Acc: 81.58 % (Best: 81.58 % at Epoch 15)
+Epoch  30 / 135 | Cost: 0.032463 | Q-Grad Norm: 0.01965377 | Test Acc: 84.21 % (Best: 84.21 % at Epoch 30)
+Epoch  45 / 135 | Cost: 0.020265 | Q-Grad Norm: 0.01206273 | Test Acc: 89.47 % (Best: 89.47 % at Epoch 45)
+Epoch  60 / 135 | Cost: 0.012838 | Q-Grad Norm: 0.00556832 | Test Acc: 84.21 % (Best: 89.47 % at Epoch 45)
+Epoch  75 / 135 | Cost: 0.008072 | Q-Grad Norm: 0.00247877 | Test Acc: 86.84 % (Best: 89.47 % at Epoch 45)
+Epoch  90 / 135 | Cost: 0.005363 | Q-Grad Norm: 0.00145493 | Test Acc: 84.21 % (Best: 89.47 % at Epoch 45)
+Epoch 105 / 135 | Cost: 0.003541 | Q-Grad Norm: 0.00103002 | Test Acc: 86.84 % (Best: 89.47 % at Epoch 45)
+Epoch 120 / 135 | Cost: 0.002458 | Q-Grad Norm: 0.00071845 | Test Acc: 89.47 % (Best: 89.47 % at Epoch 120)
+Epoch 135 / 135 | Cost: 0.001787 | Q-Grad Norm: 0.00070026 | Test Acc: 92.11 % (Best: 92.11 % at Epoch 135)
+
+=> 🏁 [MISSION COMPLETE]
+   ハントした最高正解率: 92.11 % (Epoch 135 時のモデルを採用)

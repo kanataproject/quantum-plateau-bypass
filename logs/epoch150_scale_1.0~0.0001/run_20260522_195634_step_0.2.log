@@ -1,0 +1,18 @@
+======================================================
+  粒度 (Step Size): 0.2
+  目標 Epoch     : 150
+  開始時刻       : 2026-05-22 19:56:45
+======================================================
+
+Epoch  15 | Cost: 0.073947 | Q-Grad Norm: 0.03637072
+Epoch  30 | Cost: 0.037431 | Q-Grad Norm: 0.02169523
+Epoch  45 | Cost: 0.032647 | Q-Grad Norm: 0.01593738
+Epoch  60 | Cost: 0.028397 | Q-Grad Norm: 0.01984320
+Epoch  75 | Cost: 0.013868 | Q-Grad Norm: 0.02018449
+Epoch  90 | Cost: 0.009591 | Q-Grad Norm: 0.01748648
+Epoch 105 | Cost: 0.008308 | Q-Grad Norm: 0.02947567
+Epoch 120 | Cost: 0.004674 | Q-Grad Norm: 0.01217507
+Epoch 135 | Cost: 0.003405 | Q-Grad Norm: 0.01395527
+Epoch 150 | Cost: 0.003554 | Q-Grad Norm: 0.02620977
+
+=> ⚠️ [KILL] 成長の停滞(ウロウロ)を検知。終了。
