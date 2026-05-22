@@ -193,7 +193,7 @@ Epoch 150 | 平均誤差: 0.004524 | 量子勾配ノルム: 0.01837968
 【最終テスト正解率 (Accuracy)】: 89.47 %
 ```
 
-##　5. 使い方
+## 5. 使い方
 ```text
 pip install pennylane scikit-learn
 基本動作確認
