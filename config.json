@@ -1,0 +1,24 @@
+{
+  "system": {
+    "max_workers": 6,
+    "random_seed": 42
+  },
+  "data": {
+    "input_dimensions": 30
+  },
+  "quantum_model": {
+    "n_qubits": 10,
+    "num_layers": 4
+  },
+  "classical_model": {
+    "hidden_nodes": 16
+  },
+  "hunter_settings": {
+    "step_candidates": [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001],
+    "max_epochs": 500,
+    "learning_rate": 0.05,
+    "patience_limit": 2,
+    "cost_tolerance": 0.0001,
+    "log_interval": 15
+  }
+}
