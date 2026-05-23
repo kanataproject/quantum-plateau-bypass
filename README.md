@@ -397,4 +397,66 @@ python examples/test_4qubit.py
 実データ検証
 python examples/test_iris.py
 python examples/test_wine_8qubit.py
+他のソフトにimportしたい場合
+同じフォルダにモジュールと設定ファイルを置いて、別の実行用スクリプト（例: main.py）から呼び出すのが基本の形になります。
+
+ディレクトリ構成イメージ
+project_folder/
+ ├── quantum_classifier.py  # コアモジュール
+ ├── config.json            # 設定ファイル
+ └── main.py                # メインスクリプト
+main.py での実装例
+外部スクリプトからは、「設定を読み込む」 ➔ 「学習をぶん回す」 ➔ 「一番良いモデルで推論する」 という3ステップだけで完結します。
+
+Python
+from pennylane import numpy as np
+from sklearn.datasets import load_breast_cancer
+
+# 独自の量子モジュールから必要な部品をインポート
+from quantum_classifier import load_config, launch_quantum_hunt, HybridQuantumClassifier
+
+def main():
+    # ==========================================
+    # 1. データの準備 (パイプライン等から持ってくる想定)
+    # ==========================================
+    cancer = load_breast_cancer()
+    X_scaled = (cancer.data - np.mean(cancer.data, axis=0)) / np.std(cancer.data, axis=0)
+    y = cancer.target
+    
+    X_train, y_train = X_scaled[:400], y[:400]
+    X_test, y_test = X_scaled[400:], y[400:]
+
+    # ==========================================
+    # 2. 学習フェーズ (並列ハンティング)
+    # ==========================================
+    # 設定ファイルのロード
+    config = load_config("config.json")
+    
+    # ハンティング開始（一番精度が高かった重みと粒度を自動で返してくる）
+    print("学習を開始します...")
+    best_weights, best_step = launch_quantum_hunt(
+        config=config, 
+        X_train=X_train, 
+        y_train=y_train, 
+        X_test=X_test, 
+        y_test=y_test, 
+        log_dir="logs"
+    )
+
+    # ==========================================
+    # 3. 推論フェーズ (未知のデータへの予測)
+    # ==========================================
+    # 最適モデルのインスタンスを立ち上げ、最高の重みをセット
+    model = HybridQuantumClassifier(config)
+    model.weights = best_weights
+
+    # 例：テストデータの最初の5件を予測してみる
+    print(f"\n採用されたStep Size: {best_step}")
+    for i in range(5):
+        raw_pred = model.predict(X_test[i], best_step)
+        binary_pred = 1 if raw_pred >= 0.5 else 0
+        print(f"データ[{i}] | 予測: {binary_pred} (実値: {y_test[i]}) | 生の出力値: {raw_pred:.4f}")
+
+if __name__ == "__main__":
+    main()
 ```
