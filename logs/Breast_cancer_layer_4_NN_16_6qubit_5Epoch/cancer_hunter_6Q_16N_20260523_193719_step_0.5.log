@@ -1,0 +1,20 @@
+======================================================
+ 乳がん30次元対応(6Qubit最適化 / 16ノード) - 本格検証版
+ 担当粒度 (Step Size) : 0.5
+======================================================
+
+Epoch   5 | Cost: 0.370820 | Acc: 57.99% (Best: 57.99% @ Ep5) | Stag: 0/3
+Epoch  10 | Cost: 0.231746 | Acc: 49.11% (Best: 57.99% @ Ep5) | Stag: 1/3
+Epoch  15 | Cost: 0.196070 | Acc: 68.05% (Best: 68.05% @ Ep15) | Stag: 0/3
+Epoch  20 | Cost: 0.177627 | Acc: 68.64% (Best: 68.64% @ Ep20) | Stag: 0/3
+Epoch  25 | Cost: 0.158904 | Acc: 75.74% (Best: 75.74% @ Ep25) | Stag: 0/3
+Epoch  30 | Cost: 0.132073 | Acc: 79.29% (Best: 79.29% @ Ep30) | Stag: 0/3
+Epoch  35 | Cost: 0.119777 | Acc: 81.66% (Best: 81.66% @ Ep35) | Stag: 0/3
+Epoch  40 | Cost: 0.112352 | Acc: 81.66% (Best: 81.66% @ Ep35) | Stag: 1/3
+Epoch  45 | Cost: 0.108680 | Acc: 82.25% (Best: 82.25% @ Ep45) | Stag: 0/3
+Epoch  50 | Cost: 0.100215 | Acc: 80.47% (Best: 82.25% @ Ep45) | Stag: 1/3
+Epoch  55 | Cost: 0.097567 | Acc: 84.02% (Best: 84.02% @ Ep55) | Stag: 0/3
+Epoch  60 | Cost: 0.094182 | Acc: 85.80% (Best: 85.80% @ Ep60) | Stag: 0/3
+Epoch  65 | Cost: 0.096582 | Acc: 85.21% (Best: 85.80% @ Ep60) | Stag: 1/3
+
+=> ⚠️ [KILL] Cost減少幅の停滞(LOOP限界)を検知し自動停止。
