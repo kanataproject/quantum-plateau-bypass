@@ -1,0 +1,18 @@
+======================================================
+ 乳がん30次元対応(10Qubit拡張 / 16ノード) - 最終検証版
+ 担当粒度 (Step Size) : 0.01
+======================================================
+
+Epoch   5 | Cost: 0.235870 | Acc: 69.23% (Best: 69.23% @ Ep5) | Stag: 0/3
+Epoch  10 | Cost: 0.180632 | Acc: 79.29% (Best: 79.29% @ Ep10) | Stag: 0/3
+Epoch  15 | Cost: 0.149396 | Acc: 75.74% (Best: 79.29% @ Ep10) | Stag: 1/3
+Epoch  20 | Cost: 0.126567 | Acc: 80.47% (Best: 80.47% @ Ep20) | Stag: 0/3
+Epoch  25 | Cost: 0.106189 | Acc: 78.11% (Best: 80.47% @ Ep20) | Stag: 1/3
+Epoch  30 | Cost: 0.098191 | Acc: 86.39% (Best: 86.39% @ Ep30) | Stag: 0/3
+Epoch  35 | Cost: 0.091402 | Acc: 87.57% (Best: 87.57% @ Ep35) | Stag: 0/3
+Epoch  40 | Cost: 0.085230 | Acc: 89.35% (Best: 89.35% @ Ep40) | Stag: 0/3
+Epoch  45 | Cost: 0.081644 | Acc: 88.17% (Best: 89.35% @ Ep40) | Stag: 1/3
+Epoch  50 | Cost: 0.078194 | Acc: 87.57% (Best: 89.35% @ Ep40) | Stag: 2/3
+Epoch  55 | Cost: 0.075217 | Acc: 87.57% (Best: 89.35% @ Ep40) | Stag: 3/3
+
+=> ⚠️ [KILL] Test Acc が 3回連続で最高値を更新せず。過学習と判断し自動停止。

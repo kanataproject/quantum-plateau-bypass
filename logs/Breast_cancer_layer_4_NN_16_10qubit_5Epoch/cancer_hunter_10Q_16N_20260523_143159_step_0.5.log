@@ -1,0 +1,23 @@
+======================================================
+ 乳がん30次元対応(10Qubit拡張 / 16ノード) - 最終検証版
+ 担当粒度 (Step Size) : 0.5
+======================================================
+
+Epoch   5 | Cost: 0.282987 | Acc: 64.50% (Best: 64.50% @ Ep5) | Stag: 0/3
+Epoch  10 | Cost: 0.220054 | Acc: 67.46% (Best: 67.46% @ Ep10) | Stag: 0/3
+Epoch  15 | Cost: 0.205037 | Acc: 69.82% (Best: 69.82% @ Ep15) | Stag: 0/3
+Epoch  20 | Cost: 0.187732 | Acc: 70.41% (Best: 70.41% @ Ep20) | Stag: 0/3
+Epoch  25 | Cost: 0.183647 | Acc: 70.41% (Best: 70.41% @ Ep20) | Stag: 1/3
+Epoch  30 | Cost: 0.158474 | Acc: 73.37% (Best: 73.37% @ Ep30) | Stag: 0/3
+Epoch  35 | Cost: 0.155191 | Acc: 73.37% (Best: 73.37% @ Ep30) | Stag: 1/3
+Epoch  40 | Cost: 0.137310 | Acc: 80.47% (Best: 80.47% @ Ep40) | Stag: 0/3
+Epoch  45 | Cost: 0.117159 | Acc: 85.80% (Best: 85.80% @ Ep45) | Stag: 0/3
+Epoch  50 | Cost: 0.103241 | Acc: 86.39% (Best: 86.39% @ Ep50) | Stag: 0/3
+Epoch  55 | Cost: 0.096938 | Acc: 86.98% (Best: 86.98% @ Ep55) | Stag: 0/3
+Epoch  60 | Cost: 0.092166 | Acc: 88.17% (Best: 88.17% @ Ep60) | Stag: 0/3
+Epoch  65 | Cost: 0.088732 | Acc: 89.35% (Best: 89.35% @ Ep65) | Stag: 0/3
+Epoch  70 | Cost: 0.081776 | Acc: 89.94% (Best: 89.94% @ Ep70) | Stag: 0/3
+Epoch  75 | Cost: 0.076682 | Acc: 86.39% (Best: 89.94% @ Ep70) | Stag: 1/3
+Epoch  80 | Cost: 0.080189 | Acc: 87.57% (Best: 89.94% @ Ep70) | Stag: 2/3
+
+=> ⚠️ [KILL] Cost減少幅の停滞(LOOP限界)を検知し自動停止。
