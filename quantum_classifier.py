@@ -1,13 +1,7 @@
 import os
 import json
-import multiprocessing
 import copy
-
-os.environ["OMP_NUM_THREADS"] = "1"
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
-os.environ["MKL_NUM_THREADS"] = "1"
-os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
-os.environ["NUMEXPR_NUM_THREADS"] = "1"
+import multiprocessing
 
 import pennylane as qml
 from pennylane import numpy as np
@@ -32,6 +26,11 @@ def load_config(config_path="config.json"):
 class HybridQuantumClassifier:
     def __init__(self, config):
         self.input_dim = config["data"]["input_dimensions"]
+        
+        # --- 多クラス対応のスケーリング設定 ---
+        self.output_classes = config["data"].get("output_classes", 2)
+        self.label_scale = (self.output_classes - 1) / 2.0 if self.output_classes > 2 else 1.0
+        
         self.n_qubits = config["quantum_model"]["n_qubits"]
         self.num_layers = config["quantum_model"]["num_layers"]
         self.hidden_nodes = config["classical_model"]["hidden_nodes"]
@@ -122,7 +121,16 @@ class HybridQuantumClassifier:
         correct = 0
         for inputs, target in test_data:
             pred = self._neural_network(inputs, self.weights, step_size)
-            pred_class = float(np.round(pred))  # ← ★四捨五入に変更（これで何クラスでもOK）
+            
+            # --- 評価時の多クラス/2値分類の分岐 ---
+            if self.output_classes > 2:
+                # 多クラス: -1〜1 の出力を 0〜(classes-1) に復元
+                pred_class = round(float(pred + 1.0) * self.label_scale)
+                pred_class = max(0, min(self.output_classes - 1, pred_class))
+            else:
+                # 2値分類: 乳がんデータ等向けの後方互換
+                pred_class = 1.0 if pred >= 0.5 else 0.0
+                
             if pred_class == target:
                 correct += 1
         return correct / len(test_data)
