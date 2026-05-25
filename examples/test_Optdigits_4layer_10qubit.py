@@ -1,17 +1,12 @@
 import os
-import sys
-import json
 import datetime
 import multiprocessing
 
-# PennyLane仕様のNumpy（requires_gradエラー回避）
 from pennylane import numpy as np
-
 import pygame
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 
-# スレッド数の競合を防ぐための環境変数一括固定
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -19,63 +14,50 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
-# モジュールから内部ワーカーとConfig読み込み関数をインポート
-from quantum_classifier import _run_parallel_worker, HybridQuantumClassifier, load_config
+from quantum_classifier import _run_parallel_worker, HybridQuantumClassifier
 
 # ======================================================
-# Pygame GUI メインループ (完全Config連動版)
+# Pygame GUI メインループ
 # ======================================================
-def run_control_panel(config, X_train, y_train, X_test, y_test, step_candidates, initial_weights, shared_dict, timestamp, log_dir):
+def run_control_panel(config, X_train, y_train, X_test, y_test,
+                      step_candidates, initial_weights, shared_dict, timestamp, log_dir):
     pygame.init()
-    
-    # Configから各種パラメータを動的取得
-    in_dim = config["data"]["input_dimensions"]
-    out_classes = config["data"].get("output_classes", 2)
-    n_qubits = config["quantum_model"]["n_qubits"]
-    h_nodes = config["classical_model"]["hidden_nodes"]
-    patience_val = config["hunter_settings"]["patience_limit"]
-    target_epochs = config["hunter_settings"]["max_epochs"]
-    
     WIDTH, HEIGHT = 900, 750
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption(f"{in_dim}D Data ({n_qubits}Qubit/{h_nodes}Nodes) High-Res Hunt")
+    output_classes = config["data"].get("output_classes", 2)
+    pygame.display.set_caption(f"QML Hunt - {config['data']['input_dimensions']}D / {output_classes} Classes")
     clock = pygame.time.Clock()
 
     font_xl = pygame.font.SysFont("consolas", 32, bold=True)
-    font_l = pygame.font.SysFont("consolas", 24, bold=True)
-    font_m = pygame.font.SysFont("consolas", 18, bold=True)
-    font_s = pygame.font.SysFont("consolas", 14)
+    font_l  = pygame.font.SysFont("consolas", 24, bold=True)
+    font_m  = pygame.font.SysFont("consolas", 18, bold=True)
+    font_s  = pygame.font.SysFont("consolas", 14)
 
-    BG_COLOR = (25, 15, 20)
-    TEXT_COLOR = (230, 220, 220)
-    COLOR_BTN_IDLE = (80, 60, 60)
+    BG_COLOR        = (25, 15, 20)
+    TEXT_COLOR      = (230, 220, 220)
+    COLOR_BTN_IDLE  = (80, 60, 60)
     COLOR_BTN_HOVER = (100, 80, 80)
-    COLOR_START_IDLE = (180, 80, 80)
+    COLOR_START_IDLE  = (180, 80, 80)
     COLOR_START_HOVER = (210, 100, 100)
-    
-    COLOR_RUNNING = (110, 210, 110)
-    COLOR_INIT = (130, 120, 120)
+    COLOR_RUNNING   = (110, 210, 110)
+    COLOR_INIT      = (130, 120, 120)
     COLOR_KILL_LOOP = (220, 140, 40)
     COLOR_KILL_STAG = (210, 80, 80)
-    COLOR_GOAL = (255, 150, 150)
+    COLOR_GOAL      = (255, 150, 150)
 
-    ui_state = "SETUP"
-    processes = []
+    ui_state      = "SETUP"
+    target_epochs = config["hunter_settings"]["max_epochs"]
+    processes     = []
 
     btn_minus = pygame.Rect(350, 250, 50, 40)
-    btn_plus = pygame.Rect(500, 250, 50, 40)
+    btn_plus  = pygame.Rect(500, 250, 50, 40)
     btn_start = pygame.Rect(300, 350, 300, 60)
 
-    # ====================================================
-    # 多クラス対応: ターゲットラベルの分離とテンソル化
-    # ====================================================
-    scale_factor = (out_classes - 1) / 2.0 if out_classes > 2 else 1.0
-    
-    # 訓練用のみ -1〜1 に正規化（テスト用はそのまま維持）
-    y_train_norm = (y_train / scale_factor) - 1.0 if out_classes > 2 else y_train
-    
-    train_data = [(np.array(x, requires_grad=False), y_norm) for x, y_norm in zip(X_train, y_train_norm)]
-    test_data = [(np.array(x, requires_grad=False), y) for x, y in zip(X_test, y_test)]
+    # ラベルはそのまま整数で渡す（正規化不要）
+    train_data = [(np.array(x, requires_grad=False), int(y))
+                  for x, y in zip(X_train, y_train)]
+    test_data  = [(np.array(x, requires_grad=False), int(y))
+                  for x, y in zip(X_test, y_test)]
 
     running = True
     while running:
@@ -83,7 +65,7 @@ def run_control_panel(config, X_train, y_train, X_test, y_test, step_candidates,
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            
+
             if event.type == pygame.MOUSEBUTTONDOWN and ui_state == "SETUP":
                 if btn_minus.collidepoint(mouse_pos):
                     target_epochs = max(50, target_epochs - 50)
@@ -92,62 +74,76 @@ def run_control_panel(config, X_train, y_train, X_test, y_test, step_candidates,
                 elif btn_start.collidepoint(mouse_pos):
                     ui_state = "RUNNING"
                     config["hunter_settings"]["max_epochs"] = target_epochs
-                    
                     for step in step_candidates:
                         p = multiprocessing.Process(
                             target=_run_parallel_worker,
-                            args=(step, config, train_data, test_data, initial_weights, shared_dict, timestamp, log_dir)
+                            args=(step, config, train_data, test_data,
+                                  initial_weights, shared_dict, timestamp, log_dir)
                         )
                         p.start()
                         processes.append(p)
-                        
+
         screen.fill(BG_COLOR)
-        
+
         if ui_state == "SETUP":
-            title = font_xl.render(f"{n_qubits}-QUBIT / {in_dim}D ({out_classes} CLASSES) HUNT", True, TEXT_COLOR)
+            title = font_xl.render(
+                f"{config['quantum_model']['n_qubits']}Q / "
+                f"{config['data']['input_dimensions']}D / "
+                f"{output_classes} CLASSES HUNT", True, TEXT_COLOR)
             screen.blit(title, (WIDTH//2 - title.get_width()//2, 100))
+
             epoch_label = font_l.render("Max Target Epochs", True, (160, 150, 150))
             screen.blit(epoch_label, (WIDTH//2 - epoch_label.get_width()//2, 200))
-            
-            pygame.draw.rect(screen, COLOR_BTN_HOVER if btn_minus.collidepoint(mouse_pos) else COLOR_BTN_IDLE, btn_minus, border_radius=5)
+
+            pygame.draw.rect(screen,
+                COLOR_BTN_HOVER if btn_minus.collidepoint(mouse_pos) else COLOR_BTN_IDLE,
+                btn_minus, border_radius=5)
             minus_txt = font_l.render("-", True, TEXT_COLOR)
-            screen.blit(minus_txt, (btn_minus.centerx - minus_txt.get_width()//2, btn_minus.centery - minus_txt.get_height()//2))
-            
+            screen.blit(minus_txt, (btn_minus.centerx - minus_txt.get_width()//2,
+                                    btn_minus.centery - minus_txt.get_height()//2))
+
             epoch_val = font_xl.render(f"{target_epochs}", True, COLOR_GOAL)
             screen.blit(epoch_val, (WIDTH//2 - epoch_val.get_width()//2, 255))
 
-            pygame.draw.rect(screen, COLOR_BTN_HOVER if btn_plus.collidepoint(mouse_pos) else COLOR_BTN_IDLE, btn_plus, border_radius=5)
+            pygame.draw.rect(screen,
+                COLOR_BTN_HOVER if btn_plus.collidepoint(mouse_pos) else COLOR_BTN_IDLE,
+                btn_plus, border_radius=5)
             plus_txt = font_l.render("+", True, TEXT_COLOR)
-            screen.blit(plus_txt, (btn_plus.centerx - plus_txt.get_width()//2, btn_plus.centery - plus_txt.get_height()//2))
+            screen.blit(plus_txt, (btn_plus.centerx - plus_txt.get_width()//2,
+                                   btn_plus.centery - plus_txt.get_height()//2))
 
-            pygame.draw.rect(screen, COLOR_START_HOVER if btn_start.collidepoint(mouse_pos) else COLOR_START_IDLE, btn_start, border_radius=10)
-            start_txt = font_xl.render("LAUNCH HIGH-RES HUNT", True, (255, 255, 255))
-            screen.blit(start_txt, (btn_start.centerx - start_txt.get_width()//2, btn_start.centery - start_txt.get_height()//2))
+            pygame.draw.rect(screen,
+                COLOR_START_HOVER if btn_start.collidepoint(mouse_pos) else COLOR_START_IDLE,
+                btn_start, border_radius=10)
+            start_txt = font_xl.render("LAUNCH HUNT", True, (255, 255, 255))
+            screen.blit(start_txt, (btn_start.centerx - start_txt.get_width()//2,
+                                    btn_start.centery - start_txt.get_height()//2))
 
         elif ui_state == "RUNNING":
-            title = font_l.render(f"Universal QML Dashboard ({in_dim}D Mode)", True, (190, 180, 180))
+            title = font_l.render("Universal QML Dashboard", True, (190, 180, 180))
             screen.blit(title, (20, 20))
-            
-            y_offset = 70
+
+            y_offset       = 70
             active_processes = 0
 
             for step in step_candidates:
                 state = shared_dict.get(step, {
                     "epoch": 0, "cost": 0.0, "status": "WAITING",
-                    "best_acc": 0.0, "best_epoch": 0, "stagnation": 0
+                    "best_acc": 0.0, "best_epoch": 0
                 })
-                
+
                 panel_rect = pygame.Rect(20, y_offset, WIDTH - 40, 80)
                 pygame.draw.rect(screen, (40, 30, 30), panel_rect, border_radius=6)
-                
-                step_text = font_m.render(f"Step: {step:<8}", True, COLOR_GOAL)
-                epoch_text = font_m.render(f"Epoch: {state['epoch']:>3} / {target_epochs}", True, TEXT_COLOR)
-                
-                best_acc = state.get("best_acc", 0.0)
-                best_ep = state.get("best_epoch", 0)
-                
-                info_text1 = font_s.render(f"Cost: {state['cost']:.5f} | Best Acc: {best_acc*100:.2f}% (Ep {best_ep})", True, (200, 200, 200))
-                
+
+                step_text  = font_m.render(f"Step: {step:<8}", True, COLOR_GOAL)
+                epoch_text = font_m.render(
+                    f"Epoch: {state['epoch']:>3} / {target_epochs}", True, TEXT_COLOR)
+                best_acc   = state.get("best_acc", 0.0)
+                best_ep    = state.get("best_epoch", 0)
+                info_text  = font_s.render(
+                    f"Cost: {state['cost']:.5f} | Best Acc: {best_acc*100:.2f}% (Ep {best_ep})",
+                    True, (200, 200, 200))
+
                 status_str = state["status"]
                 if "RUNNING" in status_str:
                     status_color = COLOR_RUNNING
@@ -163,31 +159,31 @@ def run_control_panel(config, X_train, y_train, X_test, y_test, step_candidates,
                     status_color = COLOR_GOAL
                 else:
                     status_color = (100, 100, 100)
-                    
+
                 status_text = font_m.render(status_str, True, status_color)
-                
-                screen.blit(step_text, (35, y_offset + 15))
+
+                screen.blit(step_text,  (35, y_offset + 15))
                 screen.blit(epoch_text, (180, y_offset + 15))
-                screen.blit(info_text1, (180, y_offset + 40))
-                
+                screen.blit(info_text,  (180, y_offset + 40))
+
                 bar_width = 250
-                bar_bg = pygame.Rect(450, y_offset + 20, bar_width, 12)
+                bar_bg   = pygame.Rect(450, y_offset + 20, bar_width, 12)
                 progress = min(1.0, state["epoch"] / target_epochs) if target_epochs > 0 else 0
-                bar_fill = pygame.Rect(450, y_offset + 20, bar_width * progress, 12)
-                pygame.draw.rect(screen, (60, 50, 50), bar_bg, border_radius=4)
+                bar_fill = pygame.Rect(450, y_offset + 20, int(bar_width * progress), 12)
+                pygame.draw.rect(screen, (60, 50, 50), bar_bg,   border_radius=4)
                 pygame.draw.rect(screen, status_color, bar_fill, border_radius=4)
-                
                 screen.blit(status_text, (720, y_offset + 15))
-                
+
                 y_offset += 95
 
             if active_processes == 0 and len(shared_dict) == len(step_candidates):
-                footer_txt = "All lanes finished hunting! Check the logs for details."
+                footer_txt   = "All lanes finished! Check the logs for details."
                 footer_color = COLOR_GOAL
             else:
-                footer_txt = f"Active Hunters: {active_processes} / {len(step_candidates)} (Monitoring {in_dim}D / {out_classes}-Class | Patience: {patience_val})"
+                footer_txt   = (f"Active Hunters: {active_processes} / {len(step_candidates)} "
+                                f"| {config['data']['input_dimensions']}D / {output_classes}-Class")
                 footer_color = TEXT_COLOR
-                
+
             footer = font_m.render(footer_txt, True, footer_color)
             screen.blit(footer, (20, HEIGHT - 40))
 
@@ -201,67 +197,56 @@ def run_control_panel(config, X_train, y_train, X_test, y_test, step_candidates,
     pygame.quit()
 
 # ======================================================
-# メイン処理 (Config読み込み・データセットロード)
+# メイン処理
 # ======================================================
 if __name__ == "__main__":
     multiprocessing.freeze_support()
-    
-    config_path = "config.json"
-    
-    # 1. Configの動的読み込み
-    if os.path.exists(config_path):
-        print(f"[INFO] 既存の設定ファイル '{config_path}' を読み込みます。")
-        config = load_config(config_path)
-    else:
-        print(f"[INFO] 設定ファイルが見つからないため、持久戦仕様で新規生成します。")
-        config = {
-            "system": {"random_seed": 42},
-            "data": {
-                "input_dimensions": 64,
-                "output_classes": 10
-            },
-            "quantum_model": {"n_qubits": 10, "num_layers": 4},
-            "classical_model": {"hidden_nodes": 16},
-            "hunter_settings": {
-                "max_epochs": 1000,   
-                "patience_limit": 15, 
-                "cost_tolerance": 0.0001,
-                "log_interval": 5, 
-                "learning_rate": 0.01,
-                "step_candidates": [1.0, 0.5, 0.1, 0.01, 0.001, 0.00000000000001]
-            }
+
+    config = {
+        "system": {"random_seed": 42},
+        "data": {
+            "input_dimensions": 64,
+            "output_classes": 10
+        },
+        "quantum_model": {"n_qubits": 10, "num_layers": 4},
+        "classical_model": {"hidden_nodes": 16},
+        "hunter_settings": {
+            "max_epochs": 1000,
+            "patience_limit": 15,
+            "cost_tolerance": 0.0001,
+            "log_interval": 5,
+            "learning_rate": 0.01,
+            "step_candidates": [1.0, 0.5, 0.1, 0.01, 0.001, 1e-14]
         }
-        with open(config_path, "w", encoding="utf-8") as f:
-            json.dump(config, f, indent=4, ensure_ascii=False)
-            
+    }
+
     log_dir = "logs"
     os.makedirs(log_dir, exist_ok=True)
 
-    # 2. データのロードと分割（消えていた部分を復活！）
-    print(f"[INFO] Optdigits（{config['data']['input_dimensions']}次元・{config['data'].get('output_classes', 2)}クラス）データセットをロード中...")
-    digits = load_digits()
-    X = digits.data
-    y = digits.target
+    print("[INFO] Optdigits（64次元・10クラス）データセットをロード中...")
+    digits   = load_digits()
+    X        = digits.data
+    y        = digits.target
 
     X_scaled = (X - np.mean(X, axis=0)) / (np.std(X, axis=0) + 1e-8)
     X_train, X_test, y_train, y_test = train_test_split(
-        X_scaled, y, train_size=200, test_size=50, random_state=42, stratify=y
+        X_scaled, y, train_size=200, test_size=50,
+        random_state=42, stratify=y
     )
 
-    # 3. ダミーモデルでパラメータ数を取得し、初期重みを生成
     dummy_model = HybridQuantumClassifier(config)
     np.random.seed(config["system"]["random_seed"])
     initial_weights = list(np.random.uniform(-0.5, 0.5, size=dummy_model.total_params))
-    
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    manager = multiprocessing.Manager()
+
+    timestamp   = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    manager     = multiprocessing.Manager()
     shared_dict = manager.dict()
 
-    # 4. GUIコントロールパネルの起動
-    print(f"\n[INFO] {config['data']['input_dimensions']}次元 / {config['quantum_model']['n_qubits']}Qubit GUIコントロールパネルを起動します...")
+    print(f"\n[INFO] 総パラメータ数: {dummy_model.total_params}")
+    print("[INFO] GUIコントロールパネルを起動します...")
     run_control_panel(
-        config, X_train, y_train, X_test, y_test, 
-        config["hunter_settings"]["step_candidates"], 
+        config, X_train, y_train, X_test, y_test,
+        config["hunter_settings"]["step_candidates"],
         initial_weights, shared_dict, timestamp, log_dir
     )
     print("\n[INFO] ハント完了。プログラムを終了します。")
