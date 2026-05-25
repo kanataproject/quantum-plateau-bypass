@@ -122,8 +122,8 @@ class HybridQuantumClassifier:
         correct = 0
         for inputs, target in test_data:
             pred = self._neural_network(inputs, self.weights, step_size)
-            pred_binary = 1.0 if pred >= 0.5 else 0.0
-            if pred_binary == target:
+            pred_class = float(np.round(pred))  # ← ★四捨五入に変更（これで何クラスでもOK）
+            if pred_class == target:
                 correct += 1
         return correct / len(test_data)
     
