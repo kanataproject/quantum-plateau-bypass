@@ -214,10 +214,10 @@ def _run_parallel_worker(step_size, config, train_data, test_data, initial_weigh
                     shared_dict[step_size] = state
                     return
             
-                if (prev_cost - cost) <= cost_tol:
-                    state["status"] = "KILL (LOOP)"
-                    shared_dict[step_size] = state
-                    return
+                #if (prev_cost - cost) <= cost_tol:  # ここをコメントアウト外せば
+                #    state["status"] = "KILL (LOOP)" # 数値がうろうろした場合にプロセスを停止する
+                #    shared_dict[step_size] = state　# 実装方法が甘い為、COSTが上昇すると即キルしてしまう
+                #    return                          # 利用しないことを推奨します
                     
                 prev_cost = float(cost)
                 
