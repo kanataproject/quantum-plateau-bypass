@@ -50,7 +50,8 @@ class HybridQuantumClassifier:
                 for j in range(self.input_dim):
                     qubit = j % self.n_qubits
                     cycle = j // self.n_qubits
-                    angle = inputs[j] + q_weights[qubit] if cycle == 0 else inputs[j]
+                    # 全cycleへ共有重みを適用（ブラインドスポットの解消）
+                    angle = inputs[j] + q_weights[qubit]
                     if cycle % 3 == 0:
                         qml.RY(angle, wires=qubit)
                     elif cycle % 3 == 1:
@@ -78,9 +79,9 @@ class HybridQuantumClassifier:
         return (rounded_detached - scaled_detached) * step_size + raw_tensor
 
     def _softmax(self, logits):
-        """数値安定版softmax（requires_grad非対応のnp配列で計算）"""
-        e = np.exp(logits - np.max(logits))
-        return e / (np.sum(e) + 1e-12)
+        stacked = qml.math.stack(logits)
+        e = qml.math.exp(stacked - qml.math.max(stacked))
+        return e / (qml.math.sum(e) + 1e-12)
 
     def _neural_network(self, inputs, weights, step_size):
         q_weights   = weights[0:self.q_param_count]
@@ -97,7 +98,7 @@ class HybridQuantumClassifier:
                 + weights[idx + self.q_output_dim]
             hidden_out.append(np.tanh(h))
 
-        # 出力層（output_classesノード）
+        # 出力層
         out_offset = offset + self.hidden_nodes * (self.q_output_dim + 1)
         logits = []
         for c in range(self.output_classes):
@@ -106,19 +107,15 @@ class HybridQuantumClassifier:
                     + weights[idx + self.hidden_nodes]
             logits.append(logit)
 
-        return logits  # list of output_classes values
+        return logits
 
     def _cross_entropy_cost(self, weights, dataset, step_size):
-        """cross entropy loss（ラベルは整数クラスのまま渡す）"""
         total_loss = 0.0
         for inputs, target in dataset:
             logits = self._neural_network(inputs, weights, step_size)
-            # logitsをfloatリストに変換してsoftmax
-            logits_arr = np.array([float(l) for l in logits])
-            probs = self._softmax(logits_arr)
-            # target は整数クラスインデックス
+            probs = self._softmax(logits)
             t = int(target)
-            total_loss += -np.log(probs[t] + 1e-12)
+            total_loss = total_loss + (-qml.math.log(probs[t] + 1e-12))
         return total_loss / len(dataset)
 
     def evaluate(self, test_data, step_size):
@@ -136,8 +133,9 @@ class HybridQuantumClassifier:
             raise ValueError("モデルの重みが設定されていません。")
         logits    = self._neural_network(inputs, self.weights, step_size)
         logits_arr = np.array([float(l) for l in logits])
-        probs     = self._softmax(logits_arr)
-        return int(np.argmax(probs)), probs  # (予測クラス, 確率分布)
+        e = np.exp(logits_arr - np.max(logits_arr))
+        probs = e / (np.sum(e) + 1e-12)
+        return int(np.argmax(probs)), probs
 
 # ======================================================
 # 内部ワーカープロセス
@@ -146,12 +144,11 @@ def _run_parallel_worker(step_size, config, train_data, test_data,
                          initial_weights, shared_dict, timestamp, log_dir):
     os.environ["OMP_NUM_THREADS"] = "1"
 
-    h_set       = config["hunter_settings"]
+    h_set         = config["hunter_settings"]
     target_epochs = h_set["max_epochs"]
-    patience    = h_set["patience_limit"]
-    cost_tol    = h_set["cost_tolerance"]
-    log_int     = h_set.get("log_interval", 15)
-    lr          = h_set["learning_rate"]
+    log_int       = h_set.get("log_interval", 5)
+    lr            = h_set["learning_rate"]
+    reversal_limit = h_set.get("cost_reversal_limit", 3)
 
     os.makedirs(log_dir, exist_ok=True)
     log_filename = os.path.join(log_dir, f"hunter_{timestamp}_step_{step_size}.log")
@@ -166,11 +163,12 @@ def _run_parallel_worker(step_size, config, train_data, test_data,
 
         opt = qml.AdamOptimizer(stepsize=lr)
 
-        prev_cost      = float('inf')
-        best_weights   = copy.deepcopy(classifier.weights)
-        best_accuracy  = 0.0
-        best_epoch     = 0
-        stagnation_count = 0
+        prev_cost           = float('inf')
+        cost_reversal_count = 0
+        
+        best_weights  = copy.deepcopy(classifier.weights)
+        best_accuracy = 0.0
+        best_epoch    = 0
 
         state = {
             "epoch": 0, "cost": 0.0, "status": "RUNNING",
@@ -183,44 +181,44 @@ def _run_parallel_worker(step_size, config, train_data, test_data,
                 lambda w: classifier._cross_entropy_cost(w, train_data, step_size),
                 classifier.weights
             )
+            cost = float(cost)
 
             state["epoch"] = epoch + 1
-            state["cost"]  = float(cost)
+            state["cost"]  = cost
 
+            # ログ出力間隔のタイミングでのみ判定（細かいブレを平滑化）
             if (epoch + 1) % log_int == 0:
                 current_acc = classifier.evaluate(test_data, step_size)
 
                 if current_acc > best_accuracy:
-                    best_accuracy  = current_acc
-                    best_epoch     = epoch + 1
-                    best_weights   = copy.deepcopy(classifier.weights)
-                    stagnation_count = 0
+                    best_accuracy = current_acc
+                    best_epoch    = epoch + 1
+                    best_weights  = copy.deepcopy(classifier.weights)
                     state["best_acc"]     = best_accuracy
                     state["best_epoch"]   = best_epoch
                     state["best_weights"] = best_weights.tolist()
+
+                # Cost逆行判定（キルロジック）
+                if cost > prev_cost:
+                    cost_reversal_count += 1
                 else:
-                    stagnation_count += 1
+                    cost_reversal_count = 0
 
                 log_line = (
                     f"Epoch {epoch+1:3d} | Cost: {cost:.6f} | "
                     f"Acc: {current_acc*100:.2f}% "
                     f"(Best: {best_accuracy*100:.2f}% @ Ep{best_epoch}) | "
-                    f"Stag: {stagnation_count}/{patience}\n"
+                    f"Rev: {cost_reversal_count}/{reversal_limit}\n"
                 )
                 f.write(log_line)
                 f.flush()
 
-                if stagnation_count >= patience:
-                    state["status"] = "KILL (STAG)"
+                if cost_reversal_count >= reversal_limit:
+                    state["status"] = "KILL (LOOP)"
                     shared_dict[step_size] = state
                     return
 
-                #if (prev_cost - cost) <= cost_tol:  # ここをコメントアウト外せば
-                #    state["status"] = "KILL (LOOP)" # 数値がうろうろした場合にプロセスを停止する
-                #    shared_dict[step_size] = state　# 実装方法が甘い為、COSTが上昇すると即キルしてしまう
-                #    return                          # 利用しないことを推奨します
-
-                prev_cost = float(cost)
+                prev_cost = cost
 
             shared_dict[step_size] = state
 
@@ -233,7 +231,6 @@ def _run_parallel_worker(step_size, config, train_data, test_data,
 def launch_quantum_hunt(config, X_train, y_train, X_test, y_test, log_dir="logs"):
     import datetime
 
-    # ラベルはそのまま整数で渡す（正規化不要）
     train_data = [(np.array(x, requires_grad=False), int(y))
                   for x, y in zip(X_train, y_train)]
     test_data  = [(np.array(x, requires_grad=False), int(y))
@@ -250,8 +247,6 @@ def launch_quantum_hunt(config, X_train, y_train, X_test, y_test, log_dir="logs"
     shared_dict = manager.dict()
     processes   = []
 
-    print(f"[INFO] 量子ハンター起動: {len(step_candidates)} 粒度プロセスをデプロイ")
-
     for step in step_candidates:
         p = multiprocessing.Process(
             target=_run_parallel_worker,
@@ -263,8 +258,6 @@ def launch_quantum_hunt(config, X_train, y_train, X_test, y_test, log_dir="logs"
 
     for p in processes:
         p.join()
-
-    print("[INFO] 全プロセスの学習が完了しました。最適モデルを抽出します。")
 
     best_overall_acc = 0.0
     best_step        = None
