@@ -11,8 +11,8 @@ Copyright (c) 2026 kanataproject.
 1. [はじめに](#1-はじめに)
 2. [砂漠化回避のアプローチ](#2-砂漠化回避のアプローチ)
 3. [なぜこの設計なのか](#3-なぜこの設計なのか)
-4. [検証結果](#4-検証結果)
-5. [使い方](#5-使い方)
+4. [使い方](#4-使い方)
+5. [検証結果](#5-検証結果)
 
 ---
 
@@ -49,7 +49,91 @@ Copyright (c) 2026 kanataproject.
 > **【本設計のコア思想】**
 > 粗すぎる粒度も、細かすぎる粒度も、極端化すればどちらもAIにとっては“認識不能”になる。近傍状態を適度に統合することで、1特徴あたりの責務を回復させ、**「有限時間・有限観測下で真に学習可能な情報密度」**へとチューニングする。
 
-## 4. 検証結果
+
+## 4. 使い方
+```text
+pip install pennylane scikit-learn
+基本動作確認
+python examples/test_4qubit.py
+実データ検証
+python examples/test_iris.py
+python examples/test_wine_8qubit.py
+他のソフトにimportしたい場合
+同じフォルダにモジュールと設定ファイルを置いて、別の実行用スクリプト（例: main.py）から呼び出すのが基本の形になります。
+
+ディレクトリ構成イメージ
+project_folder/
+ ├── quantum_classifier.py  # コアモジュール
+ ├── config.json            # 設定ファイル
+ └── main.py                # メインスクリプト
+main.py での実装例
+外部スクリプトからは、「設定を読み込む」 ➔ 「学習をぶん回す」 ➔ 「一番良いモデルで推論する」 という3ステップだけで完結します。
+
+Python
+from pennylane import numpy as np
+from sklearn.datasets import load_breast_cancer
+
+# 独自の量子モジュールから必要な部品をインポート
+from quantum_classifier import load_config, launch_quantum_hunt, HybridQuantumClassifier
+
+def main():
+    # ==========================================
+    # 1. データの準備 (パイプライン等から持ってくる想定)
+    # ==========================================
+    cancer = load_breast_cancer()
+    X_scaled = (cancer.data - np.mean(cancer.data, axis=0)) / np.std(cancer.data, axis=0)
+    y = cancer.target
+    
+    X_train, y_train = X_scaled[:400], y[:400]
+    X_test, y_test = X_scaled[400:], y[400:]
+
+    # ==========================================
+    # 2. 学習フェーズ (並列ハンティング)
+    # ==========================================
+    # 設定ファイルのロード
+    config = load_config("config.json")
+    
+    # ハンティング開始（一番精度が高かった重みと粒度を自動で返してくる）
+    print("学習を開始します...")
+    best_weights, best_step = launch_quantum_hunt(
+        config=config, 
+        X_train=X_train, 
+        y_train=y_train, 
+        X_test=X_test, 
+        y_test=y_test, 
+        log_dir="logs"
+    )
+
+    # ==========================================
+    # 3. 推論フェーズ (未知のデータへの予測)
+    # ==========================================
+    # 最適モデルのインスタンスを立ち上げ、最高の重みをセット
+    model = HybridQuantumClassifier(config)
+    model.weights = best_weights
+
+    # 例：テストデータの最初の5件を予測してみる
+    print(f"\n採用されたStep Size: {best_step}")
+    for i in range(5):
+        raw_pred = model.predict(X_test[i], best_step)
+        binary_pred = 1 if raw_pred >= 0.5 else 0
+        print(f"データ[{i}] | 予測: {binary_pred} (実値: {y_test[i]}) | 生の出力値: {raw_pred:.4f}")
+
+if __name__ == "__main__":
+    main()
+```
+
+## 5. 検証結果
+------------------------------------------------------------------------------------------------------------
+本セクションは、kanata側で行った実験ログをそのまま記録したものです。
+
+一部にAI（Gemini等）による要約・整理表現が含まれており、断定的に見える記述も混在していますが、
+いずれも「結論の主張」を目的としたものではなく、実験過程の記録および仮説検証の補助メモです。
+
+本内容は、量子機械学習における勾配消失（Barren Plateau）問題に対して、
+どの程度まで学習が進行可能か、またどの条件で学習が破綻・安定するかを観測する目的で記録されています。
+
+このセクションは読み飛ばしても問題ありません。
+------------------------------------------------------------------------------------------------------------
 ```text
 ### ① アイリス（4次元・4qubit）
 **結果:** 未知データ30件 正解率100%、全エポックで勾配消失なし
@@ -286,14 +370,14 @@ Epoch 150 | 平均誤差: 0.016821 | 量子勾配ノルム: 0.02460860
 【最終テスト正解率 (Accuracy)】: 94.74 %
 
 ### ⑧ ワイン（8qubit・折り畳み解除+多軸化・粒度極端化テスト）
-**結果:** バレンプラトー完全回避の証明、および粒度自動補正の発見
+**結果:** 少なくとも本検証範囲では、バレンプラトー的な勾配消失を確認せず。粒度自動補正の発見
 
 → 詳細は `logs/epoch150_scale_1.0~0.00000000001` フォルダ内の履歴を参照してください。
 
 **【結論】**
 利用している数式の特性（STEハック付き翻訳層）によって、設定された粒度は機械が物理的に理解・変化できるレベルに自動補正されるため、**「PC限界粒度（極小値）で設定すること」が最適解である可能性が高い**。
 
-これにより、これまでQMLの世界で不毛とされていた「粒度調整・パラメータ探索」そのものが不要となり、実装している数式の構造それ自体によって、量子AIがBarren Plateau（砂漠化）に対する**完全回避能力（完全耐性）**を獲得している可能性が極めて強力に示唆されました。
+これにより、これまでQMLの世界で不毛とされていた「粒度調整・パラメータ探索」そのものが不要となり、実装している数式の構造それ自体によって、量子AIが深層化しても勾配が維持される傾向がある可能性が示唆されました。
 （※極小粒度 $10^{-5}$、$10^{-8}$、$10^{-10}$ の全ランナーが、小数点以下8桁まで完全にシンクロした勾配を維持したまま、砂漠化（DESERT）判定を一度も喰らうことなく爆走した事実に基づきます）
 
 また、PCの限界粒度に近い方がわずかに学習が早くなる現象が起きています。
@@ -439,76 +523,4 @@ COSTは落ちているが正答率は下がる奇妙な現象が発生。
 16ノード→20ノードに変更。
 その他、キル条件も問題があったのでCOST基準の物に変更。
 
-```
-
-## 5. 使い方
-```text
-pip install pennylane scikit-learn
-基本動作確認
-python examples/test_4qubit.py
-実データ検証
-python examples/test_iris.py
-python examples/test_wine_8qubit.py
-他のソフトにimportしたい場合
-同じフォルダにモジュールと設定ファイルを置いて、別の実行用スクリプト（例: main.py）から呼び出すのが基本の形になります。
-
-ディレクトリ構成イメージ
-project_folder/
- ├── quantum_classifier.py  # コアモジュール
- ├── config.json            # 設定ファイル
- └── main.py                # メインスクリプト
-main.py での実装例
-外部スクリプトからは、「設定を読み込む」 ➔ 「学習をぶん回す」 ➔ 「一番良いモデルで推論する」 という3ステップだけで完結します。
-
-Python
-from pennylane import numpy as np
-from sklearn.datasets import load_breast_cancer
-
-# 独自の量子モジュールから必要な部品をインポート
-from quantum_classifier import load_config, launch_quantum_hunt, HybridQuantumClassifier
-
-def main():
-    # ==========================================
-    # 1. データの準備 (パイプライン等から持ってくる想定)
-    # ==========================================
-    cancer = load_breast_cancer()
-    X_scaled = (cancer.data - np.mean(cancer.data, axis=0)) / np.std(cancer.data, axis=0)
-    y = cancer.target
-    
-    X_train, y_train = X_scaled[:400], y[:400]
-    X_test, y_test = X_scaled[400:], y[400:]
-
-    # ==========================================
-    # 2. 学習フェーズ (並列ハンティング)
-    # ==========================================
-    # 設定ファイルのロード
-    config = load_config("config.json")
-    
-    # ハンティング開始（一番精度が高かった重みと粒度を自動で返してくる）
-    print("学習を開始します...")
-    best_weights, best_step = launch_quantum_hunt(
-        config=config, 
-        X_train=X_train, 
-        y_train=y_train, 
-        X_test=X_test, 
-        y_test=y_test, 
-        log_dir="logs"
-    )
-
-    # ==========================================
-    # 3. 推論フェーズ (未知のデータへの予測)
-    # ==========================================
-    # 最適モデルのインスタンスを立ち上げ、最高の重みをセット
-    model = HybridQuantumClassifier(config)
-    model.weights = best_weights
-
-    # 例：テストデータの最初の5件を予測してみる
-    print(f"\n採用されたStep Size: {best_step}")
-    for i in range(5):
-        raw_pred = model.predict(X_test[i], best_step)
-        binary_pred = 1 if raw_pred >= 0.5 else 0
-        print(f"データ[{i}] | 予測: {binary_pred} (実値: {y_test[i]}) | 生の出力値: {raw_pred:.4f}")
-
-if __name__ == "__main__":
-    main()
 ```
