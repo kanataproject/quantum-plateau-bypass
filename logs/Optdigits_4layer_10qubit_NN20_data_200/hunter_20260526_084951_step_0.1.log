@@ -1,0 +1,28 @@
+======================================================
+ 量子ハンター・ワーカープロセス (Step Size: 0.1)
+======================================================
+
+Epoch   5 | Cost: 2.169698 | Acc: 18.00% (Best: 18.00% @ Ep5) | Rev: 0/3
+Epoch  10 | Cost: 1.865255 | Acc: 30.00% (Best: 30.00% @ Ep10) | Rev: 0/3
+Epoch  15 | Cost: 1.568294 | Acc: 30.00% (Best: 30.00% @ Ep10) | Rev: 0/3
+Epoch  20 | Cost: 1.360223 | Acc: 26.00% (Best: 30.00% @ Ep10) | Rev: 0/3
+Epoch  25 | Cost: 1.196550 | Acc: 22.00% (Best: 30.00% @ Ep10) | Rev: 0/3
+Epoch  30 | Cost: 1.119278 | Acc: 30.00% (Best: 30.00% @ Ep10) | Rev: 0/3
+Epoch  35 | Cost: 0.981452 | Acc: 28.00% (Best: 30.00% @ Ep10) | Rev: 0/3
+Epoch  40 | Cost: 0.942136 | Acc: 34.00% (Best: 34.00% @ Ep40) | Rev: 0/3
+Epoch  45 | Cost: 0.843287 | Acc: 28.00% (Best: 34.00% @ Ep40) | Rev: 0/3
+Epoch  50 | Cost: 0.798708 | Acc: 38.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  55 | Cost: 0.752015 | Acc: 36.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  60 | Cost: 0.689199 | Acc: 34.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  65 | Cost: 0.600265 | Acc: 36.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  70 | Cost: 0.564089 | Acc: 30.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  75 | Cost: 0.511716 | Acc: 30.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  80 | Cost: 0.506952 | Acc: 32.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  85 | Cost: 0.432314 | Acc: 34.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  90 | Cost: 0.374704 | Acc: 32.00% (Best: 38.00% @ Ep50) | Rev: 0/3
+Epoch  95 | Cost: 0.352482 | Acc: 40.00% (Best: 40.00% @ Ep95) | Rev: 0/3
+Epoch 100 | Cost: 0.292166 | Acc: 36.00% (Best: 40.00% @ Ep95) | Rev: 0/3
+Epoch 105 | Cost: 0.258302 | Acc: 34.00% (Best: 40.00% @ Ep95) | Rev: 0/3
+Epoch 110 | Cost: 0.241797 | Acc: 36.00% (Best: 40.00% @ Ep95) | Rev: 0/3
+Epoch 115 | Cost: 0.181815 | Acc: 36.00% (Best: 40.00% @ Ep95) | Rev: 0/3
+Epoch 120 | Cost: 0.174120 | Acc: 34.00% (Best: 40.00% @ Ep95) | Rev: 0/3

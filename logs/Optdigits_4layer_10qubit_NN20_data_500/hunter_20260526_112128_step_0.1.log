@@ -1,0 +1,57 @@
+======================================================
+ 量子ハンター・ワーカープロセス (Step Size: 0.1)
+======================================================
+
+Epoch   5 | Cost: 2.145212 | Acc: 28.00% (Best: 28.00% @ Ep5) | Rev: 0/3
+Epoch  10 | Cost: 1.860813 | Acc: 29.00% (Best: 29.00% @ Ep10) | Rev: 0/3
+Epoch  15 | Cost: 1.677928 | Acc: 35.00% (Best: 35.00% @ Ep15) | Rev: 0/3
+Epoch  20 | Cost: 1.579011 | Acc: 36.00% (Best: 36.00% @ Ep20) | Rev: 0/3
+Epoch  25 | Cost: 1.495916 | Acc: 34.00% (Best: 36.00% @ Ep20) | Rev: 0/3
+Epoch  30 | Cost: 1.411253 | Acc: 37.00% (Best: 37.00% @ Ep30) | Rev: 0/3
+Epoch  35 | Cost: 1.343790 | Acc: 41.00% (Best: 41.00% @ Ep35) | Rev: 0/3
+Epoch  40 | Cost: 1.290305 | Acc: 41.00% (Best: 41.00% @ Ep35) | Rev: 0/3
+Epoch  45 | Cost: 1.231892 | Acc: 44.00% (Best: 44.00% @ Ep45) | Rev: 0/3
+Epoch  50 | Cost: 1.202696 | Acc: 43.00% (Best: 44.00% @ Ep45) | Rev: 0/3
+Epoch  55 | Cost: 1.111688 | Acc: 44.00% (Best: 44.00% @ Ep45) | Rev: 0/3
+Epoch  60 | Cost: 1.048803 | Acc: 46.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch  65 | Cost: 0.989046 | Acc: 43.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch  70 | Cost: 0.947180 | Acc: 40.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch  75 | Cost: 0.904541 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch  80 | Cost: 0.850953 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch  85 | Cost: 0.813237 | Acc: 42.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch  90 | Cost: 0.756615 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch  95 | Cost: 0.713126 | Acc: 42.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 100 | Cost: 0.687104 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 105 | Cost: 0.644647 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 110 | Cost: 0.604465 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 115 | Cost: 0.586444 | Acc: 36.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 120 | Cost: 0.567160 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 125 | Cost: 0.542427 | Acc: 38.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 130 | Cost: 0.528380 | Acc: 37.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 135 | Cost: 0.520247 | Acc: 40.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 140 | Cost: 0.502667 | Acc: 40.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 145 | Cost: 0.452086 | Acc: 38.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 150 | Cost: 0.458927 | Acc: 37.00% (Best: 46.00% @ Ep60) | Rev: 1/3
+Epoch 155 | Cost: 0.452685 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 160 | Cost: 0.439119 | Acc: 39.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 165 | Cost: 0.426551 | Acc: 40.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 170 | Cost: 0.437909 | Acc: 36.00% (Best: 46.00% @ Ep60) | Rev: 1/3
+Epoch 175 | Cost: 0.422782 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 180 | Cost: 0.415302 | Acc: 36.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 185 | Cost: 0.443393 | Acc: 39.00% (Best: 46.00% @ Ep60) | Rev: 1/3
+Epoch 190 | Cost: 0.414698 | Acc: 37.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 195 | Cost: 0.426067 | Acc: 41.00% (Best: 46.00% @ Ep60) | Rev: 1/3
+Epoch 200 | Cost: 0.396180 | Acc: 37.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 205 | Cost: 0.359438 | Acc: 34.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 210 | Cost: 0.330914 | Acc: 35.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 215 | Cost: 0.347972 | Acc: 38.00% (Best: 46.00% @ Ep60) | Rev: 1/3
+Epoch 220 | Cost: 0.364454 | Acc: 35.00% (Best: 46.00% @ Ep60) | Rev: 2/3
+Epoch 225 | Cost: 0.354879 | Acc: 35.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 230 | Cost: 0.324907 | Acc: 35.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 235 | Cost: 0.349804 | Acc: 36.00% (Best: 46.00% @ Ep60) | Rev: 1/3
+Epoch 240 | Cost: 0.338052 | Acc: 37.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 245 | Cost: 0.305696 | Acc: 37.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 250 | Cost: 0.293264 | Acc: 38.00% (Best: 46.00% @ Ep60) | Rev: 0/3
+Epoch 255 | Cost: 0.311302 | Acc: 33.00% (Best: 46.00% @ Ep60) | Rev: 1/3
+Epoch 260 | Cost: 0.320919 | Acc: 35.00% (Best: 46.00% @ Ep60) | Rev: 2/3
+Epoch 265 | Cost: 0.335787 | Acc: 32.00% (Best: 46.00% @ Ep60) | Rev: 3/3
